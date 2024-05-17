@@ -5,10 +5,14 @@
   "private": true,
   "author": "Eduardo Ramírez",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.18.2",
+    "pnpm": ">=7.27"
+  },
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "build": "npm migrate:deploy && tsc",
-    "start": "node dist/index.js",
+    "build": "npm run generate && esbuild index=./src --bundle --minify --outdir=dist --packages=external --platform=node",
+    "start": "node dist",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
     "migrate:status": "prisma migrate status",
@@ -16,7 +20,8 @@
   },
   "dependencies": {
     "@prisma/client": "^5.14.0",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "esbuild": "^0.20.1"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
