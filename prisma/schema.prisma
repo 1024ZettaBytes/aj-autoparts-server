@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model customer {
+  id                                 Int           @id @unique(map: "id") @default(autoincrement())
+  type                               String        @db.VarChar(255)
+  name                               String        @db.VarChar(255)
+  phone                              String        @db.VarChar(13)
+  email                              String        @db.VarChar(255)
+  createdAt                          Int
+  customer_type                      customer_type @relation(fields: [type], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "customer_fk1")
+  vehicle_vehicle_customerTocustomer vehicle[]     @relation("vehicle_customerTocustomer")
+
+  @@index([type], map: "customer_fk1")
+}
+
+model customer_type {
+  id          String     @id @unique(map: "id") @db.VarChar(255)
+  description String     @db.VarChar(255)
+  customer    customer[]
+}
+
+model product_entry {
+  id                                        Int      @id @unique(map: "id") @default(autoincrement())
+  product                                   String   @db.VarChar(255)
+  supplier                                  Int
+  date                                      DateTime @db.DateTime(0)
+  qty                                       Int
+  cost                                      Decimal  @db.Decimal(10, 0)
+  products                                  products @relation(fields: [product], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "product_entry_fk1")
+  supplier_product_entry_supplierTosupplier supplier @relation("product_entry_supplierTosupplier", fields: [supplier], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "product_entry_fk2")
+
+  @@index([product], map: "product_entry_fk1")
+  @@index([supplier], map: "product_entry_fk2")
+}
+
+model products {
+  code          String          @id @unique(map: "code") @db.VarChar(20)
+  name          String          @db.VarChar(255)
+  stock         Int
+  min           Int
+  createdAt     DateTime        @db.DateTime(0)
+  product_entry product_entry[]
+  used_product  used_product[]
+}
+
+model service {
+  id                                         Int            @id @unique(map: "id") @default(autoincrement())
+  vehicle                                    String         @db.VarChar(18)
+  billed                                     Decimal        @default(0) @db.Decimal(10, 0)
+  status                                     String         @db.VarChar(20)
+  startDate                                  DateTime       @db.DateTime(0)
+  endDate                                    DateTime       @db.DateTime(0)
+  mileage                                    Int
+  deliveredBy                                String         @db.VarChar(150)
+  comments                                   String?        @db.Text
+  cancelReason                               String         @db.VarChar(255)
+  vehicle_service_vehicleTovehicle           vehicle        @relation("service_vehicleTovehicle", fields: [vehicle], references: [VIN], onDelete: NoAction, onUpdate: NoAction, map: "service_fk1")
+  used_product_used_product_serviceToservice used_product[] @relation("used_product_serviceToservice")
+  work_work_serviceToservice                 work[]         @relation("work_serviceToservice")
+
+  @@index([vehicle], map: "service_fk1")
+}
+
+model service_reminder {
+  id                                        Int      @id @unique(map: "id") @default(autoincrement())
+  vehicle                                   String   @db.VarChar(255)
+  date                                      DateTime @db.DateTime(0)
+  vehicle_service_reminder_vehicleTovehicle vehicle  @relation("service_reminder_vehicleTovehicle", fields: [vehicle], references: [VIN], onDelete: NoAction, onUpdate: NoAction, map: "service_reminder_fk1")
+
+  @@index([vehicle], map: "service_reminder_fk1")
+}
+
+model supplier {
+  id                                             Int             @id @unique(map: "id") @default(autoincrement())
+  name                                           String          @db.VarChar(255)
+  contactName                                    String          @db.VarChar(255)
+  phone                                          String          @db.VarChar(13)
+  email                                          String?         @db.VarChar(255)
+  address                                        String?         @db.VarChar(255)
+  comments                                       String?         @db.Text
+  createdAt                                      DateTime        @db.DateTime(0)
+  product_entry_product_entry_supplierTosupplier product_entry[] @relation("product_entry_supplierTosupplier")
+}
+
+model used_product {
+  id                                    Int      @id @unique(map: "id") @default(autoincrement())
+  product                               String   @db.VarChar(255)
+  service                               Int
+  qty                                   Int
+  unitPrice                             Decimal  @db.Decimal(10, 0)
+  discountPercentage                    Decimal  @db.Decimal(10, 0)
+  total                                 Decimal  @db.Decimal(10, 0)
+  date                                  DateTime @db.DateTime(0)
+  products                              products @relation(fields: [product], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "used_product_fk1")
+  service_used_product_serviceToservice service  @relation("used_product_serviceToservice", fields: [service], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "used_product_fk2")
+
+  @@index([product], map: "used_product_fk1")
+  @@index([service], map: "used_product_fk2")
+}
+
+model vehicle {
+  VIN                                                String             @id @unique(map: "VIN") @db.VarChar(18)
+  customer                                           Int
+  cilinders                                          Int                @db.TinyInt
+  engine                                             String             @db.VarChar(15)
+  plates                                             String             @db.VarChar(15)
+  color                                              String             @db.VarChar(30)
+  details                                            Int
+  createdAt                                          DateTime           @db.DateTime(0)
+  service_service_vehicleTovehicle                   service[]          @relation("service_vehicleTovehicle")
+  service_reminder_service_reminder_vehicleTovehicle service_reminder[] @relation("service_reminder_vehicleTovehicle")
+  customer_vehicle_customerTocustomer                customer           @relation("vehicle_customerTocustomer", fields: [customer], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "vehicle_fk1")
+  vehicles_db                                        vehicles_db        @relation(fields: [details], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "vehicle_fk6")
+
+  @@index([customer], map: "vehicle_fk1")
+  @@index([details], map: "vehicle_fk6")
+}
+
+model vehicles_db {
+  id      Int       @id @unique(map: "id") @default(autoincrement())
+  year    Int       @db.Year
+  make    String    @db.VarChar(30)
+  model   String    @db.VarChar(30)
+  vehicle vehicle[]
+}
+
+model work {
+  id                            Int      @id @unique(map: "id") @default(autoincrement())
+  service                       Int
+  description                   String   @db.VarChar(255)
+  basePrice                     Decimal  @db.Decimal(10, 0)
+  discountPercentage            Decimal  @db.Decimal(10, 0)
+  total                         Decimal  @db.Decimal(10, 0)
+  date                          DateTime @db.DateTime(0)
+  service_work_serviceToservice service  @relation("work_serviceToservice", fields: [service], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "work_fk1")
+
+  @@index([service], map: "work_fk1")
+}
