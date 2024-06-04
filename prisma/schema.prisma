@@ -32,7 +32,7 @@ model product_entry {
   supplier                                  Int
   date                                      DateTime @db.DateTime(0)
   qty                                       Int
-  cost                                      Decimal  @db.Decimal(10, 0)
+  cost                                      Decimal  @db.Decimal(15, 2)
   products                                  products @relation(fields: [product], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "product_entry_fk1")
   supplier_product_entry_supplierTosupplier supplier @relation("product_entry_supplierTosupplier", fields: [supplier], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "product_entry_fk2")
 
@@ -53,7 +53,7 @@ model products {
 model service {
   id                                                     Int                  @id @unique(map: "id") @default(autoincrement())
   vehicle                                                String               @db.VarChar(18)
-  billed                                                 Decimal?             @default(0) @db.Decimal(10, 0)
+  billed                                                 Decimal?             @default(0.00) @db.Decimal(15, 2)
   status                                                 String?              @default("IN_PROGRESS") @db.VarChar(20)
   startDate                                              DateTime             @db.DateTime(0)
   endDate                                                DateTime?            @db.DateTime(0)
@@ -96,9 +96,9 @@ model used_product {
   product                               String   @db.VarChar(255)
   service                               Int
   qty                                   Int
-  unitPrice                             Decimal  @db.Decimal(10, 0)
-  discountPercentage                    Decimal  @db.Decimal(10, 0)
-  total                                 Decimal  @db.Decimal(10, 0)
+  unitPrice                             Decimal  @db.Decimal(15, 2)
+  discountPercentage                    Decimal  @db.Decimal(15, 2)
+  total                                 Decimal  @db.Decimal(15, 2)
   date                                  DateTime @db.DateTime(0)
   products                              products @relation(fields: [product], references: [code], onDelete: NoAction, onUpdate: NoAction, map: "used_product_fk1")
   service_used_product_serviceToservice service  @relation("used_product_serviceToservice", fields: [service], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "used_product_fk2")
@@ -138,9 +138,9 @@ model work {
   id                            Int      @id @unique(map: "id") @default(autoincrement())
   service                       Int
   description                   String   @db.VarChar(255)
-  basePrice                     Decimal  @db.Decimal(10, 0)
-  discountPercentage            Decimal  @db.Decimal(10, 0)
-  total                         Decimal  @db.Decimal(10, 0)
+  basePrice                     Decimal  @db.Decimal(15, 2)
+  discountPercentage            Decimal  @db.Decimal(15, 2)
+  total                         Decimal  @db.Decimal(15, 2)
   date                          DateTime @db.DateTime(0)
   service_work_serviceToservice service  @relation("work_serviceToservice", fields: [service], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "work_fk1")
 

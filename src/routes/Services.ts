@@ -32,7 +32,7 @@ router.get("/", async (req: Request, res: Response) => {
           ],
         }
       : {};
-      
+
     const data = await prisma.service.findMany({
       select: {
         id: true,
@@ -66,6 +66,52 @@ router.get("/", async (req: Request, res: Response) => {
     });
   }
 });
+router.get("/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  let workTotal = 0;
+  let snacksTotal = 0;
+  try {
+    const data = await prisma.service.findUnique({
+      select: {
+        id: true,
+        status: true,
+        billed: true,
+        work_work_serviceToservice: true,
+        used_product_used_product_serviceToservice: true,
+        vehicle_service_vehicleTovehicle: {
+          select: {
+            vehicles_db: true,
+            customer_vehicle_customerTocustomer: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      where: {
+        id: Number(id),
+      },
+    });
+    if (!data) throw InternalError("El servicio indicado no existe");
+    data.work_work_serviceToservice.forEach(work=>{
+      workTotal = workTotal + Number(work.total);
+    })
+    data.used_product_used_product_serviceToservice.forEach(product=>{
+      snacksTotal = snacksTotal + Number(product.total);
+    })
+    res.json({ data:{...data, workTotal, snacksTotal }});
+  } catch (e: any) {
+    console.error(e);
+    res.status(500).json({
+      errorMsg:
+        e.name === "INTERNAL"
+          ? e.message
+          : "Error al consultar los datos. Por favor intente de nuevo.",
+    });
+  }
+});
+
 router.post("/", async (req: Request, res: Response) => {
   try {
     const data = req.body;
@@ -81,7 +127,7 @@ router.post("/", async (req: Request, res: Response) => {
     });
     if (serviceInProgress)
       throw InternalError(
-        "El vehículo indicado ya cuanta con un servicio activo"
+        "El vehículo indicado ya cuenta con un servicio activo"
       );
     const newService = await prisma.service.create({
       data: { ...data, createdAt: new Date() },
