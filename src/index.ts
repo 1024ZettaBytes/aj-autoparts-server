@@ -5,6 +5,8 @@ import services from "./routes/Services";
 import works from "./routes/Works";
 import inventory from "./routes/Inventory";
 import suppliers from "./routes/Suppliers";
+import catalogs from "./routes/Catalogs";
+import serviceReminders from "./routes/ServiceReminders";
 const app = express();
 const port = process.env.PORT || 9000;
 
@@ -18,6 +20,8 @@ app.use("/api/services", services);
 app.use("/api/works", works);
 app.use("/api/inventory", inventory);
 app.use("/api/suppliers", suppliers);
+app.use("/api/catalogs", catalogs);
+app.use("/api/service-reminders", serviceReminders);
 app.listen(Number(port), "0.0.0.0", () => {
   console.log(`Server listening at http://localhost:${port}`);
 });

@@ -10,8 +10,15 @@ router.get("/", async (req: Request, res: Response) => {
     const filter = searchTerm
       ? {
           OR: [
-            { VIN: { startsWith: searchTerm?.toString() } },
-            { plates: { startsWith: searchTerm?.toString() } },
+            { VIN: { contains: searchTerm?.toString() } },
+            { plates: { contains: searchTerm?.toString() } },
+            {
+              customer_vehicle_customerTocustomer: {
+                name: {
+                  contains: searchTerm?.toString(),
+                },
+              },
+            },
           ],
         }
       : {};
@@ -65,7 +72,40 @@ router.get("/", async (req: Request, res: Response) => {
     });
   }
 });
+router.get("/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
 
+  try {
+    const data = await prisma.vehicle.findUnique({
+      select: {
+        VIN: true,
+        cilinders: true,
+        engine: true,
+        plates: true,
+        color: true,
+        customer_vehicle_customerTocustomer: {
+          select: { id: true, name: true },
+        },
+        vehicles_db: true,
+        service_service_vehicleTovehicle: true,
+        service_reminder_service_reminder_vehicleTovehicle: {
+          select: { id: true, date: true },
+          orderBy: { date: "desc" },
+        },
+      },
+      where: { VIN: id?.toString() },
+    });
+    res.json({ data });
+  } catch (e: any) {
+    console.error(e);
+    res.status(500).json({
+      errorMsg:
+        e.name === "INTERNAL"
+          ? e.message
+          : "Error al consultar los datos del vehiculo. Por favor intente de nuevo.",
+    });
+  }
+});
 router.post("/", async (req: Request, res: Response) => {
   try {
     const data = req.body;
@@ -84,36 +124,23 @@ router.post("/", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/catalog", async (req: Request, res: Response) => {
-  const { year, make } = req.query;
+router.put("/", async (req: Request, res: Response) => {
   try {
-    let data;
-    if (make)
-      data = await prisma.vehicles_db.findMany({
-        where: { year: Number(year), make: make.toString() },
-      });
-    else {
-      if (year) {
-        data = await prisma.vehicles_db.groupBy({
-          by: ["make"],
-          where: { year: Number(year) },
-        });
-        data = data.map((make) => make.make);
-      } else {
-        data = await prisma.vehicles_db.groupBy({
-          by: ["year"],
-        });
-        data = data.map((year) => year.year + "");
-      }
-    }
-    res.json({ data });
+    const data = req.body;
+    const VIN = data.VIN;
+    delete data.id;
+    const vehicle = await prisma.vehicle.update({
+      where: { VIN },
+      data,
+    });
+    res
+      .status(200)
+      .json({ data: vehicle, msg: "¡Vehículo actualizado con éxito!" });
   } catch (e: any) {
     console.error(e);
     res.status(500).json({
       errorMsg:
-        e.name === "INTERNAL"
-          ? e.message
-          : "Error al consultar los datos. Por favor intente de nuevo.",
+        "Ocurrió un error al actualizar el vehículo. Por favor intente de nuevo.",
     });
   }
 });

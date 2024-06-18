@@ -142,4 +142,41 @@ router.post("/entries", async (req: Request, res: Response) => {
     });
   }
 });
+
+router.get("/issues", async (req: Request, res: Response) => {
+  try {
+    const { searchTerm } = req.query;
+
+    const filter = searchTerm
+      ? {
+          OR: [
+            { product: { contains: searchTerm?.toString() } },
+            {
+              products: { name: { contains: searchTerm?.toString() } },
+            },
+          ],
+        }
+      : {};
+    const data = await prisma.used_product.findMany({
+      include: {
+        products: {
+          select: { name: true },
+        },
+      },
+      where: {
+        ...filter,
+      },
+    });
+
+    res.json({ data });
+  } catch (e: any) {
+    console.error(e);
+    res.status(500).json({
+      errorMsg:
+        e.name === "INTERNAL"
+          ? e.message
+          : "Error al consultar los datos. Por favor intente de nuevo.",
+    });
+  }
+});
 export default router;
