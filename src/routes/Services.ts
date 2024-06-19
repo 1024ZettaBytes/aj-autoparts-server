@@ -181,7 +181,7 @@ router.post("/", async (req: Request, res: Response) => {
       },
       where: {
         vehicle: data?.vehicle,
-        status: { not: "IN_PROGRESS" },
+        status:  "IN_PROGRESS",
       },
     });
     if (serviceInProgress)
