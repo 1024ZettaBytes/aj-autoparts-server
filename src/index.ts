@@ -9,10 +9,10 @@ import catalogs from "./routes/Catalogs";
 import serviceReminders from "./routes/ServiceReminders";
 import summary from "./routes/Summary";
 const app = express();
-import cors, { CorsRequest } from "cors";
+//import cors, { CorsRequest } from "cors";
 const port = process.env.PORT || 9000;
 
-app.use(cors<CorsRequest>());
+//app.use(cors<CorsRequest>());
 app.use(express.json());
 app.use(express.raw({ type: "application/vnd.custom-type" }));
 app.use(express.text({ type: "text/html" }));
